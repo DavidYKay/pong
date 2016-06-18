@@ -1,10 +1,15 @@
 import cocos
 import pyglet
 from cocos.director import director
-from cocos.actions.interval_actions import MoveBy, MoveTo
+from cocos.actions.interval_actions import MoveBy, MoveTo, Repeat
 
+PADDLE_SPEED = 20
+
+move_up   = Repeat(MoveBy((0, PADDLE_SPEED),  0.1))
+move_down = Repeat(MoveBy((0,- PADDLE_SPEED), 0.1))
 
 class BallLayer(cocos.layer.Layer):
+    is_event_handler = True
     def __init__(self):
         super(BallLayer, self ).__init__()
         # self.text = cocos.text.Label("Ball Layer", x=200, y=380 )
@@ -25,6 +30,19 @@ class BallLayer(cocos.layer.Layer):
         self.ball.position = (200, 200)
         self.paddle_a.position = (10, 200)
         self.paddle_b.position = (600, 200)
+
+    def on_key_press (self, key, modifiers):
+        if key == 65362:
+            self.current_action = self.paddle_a.do(move_up)
+        elif key == 65364:
+            self.current_action = self.paddle_a.do(move_down)
+        else:
+            print("(ball) unknown key pressed:", key)
+
+    def on_key_release (self, key, modifiers):
+        print("(ball) released:", key)
+        #self.current_action.stop()
+        self.paddle_a.remove_action(self.current_action)
 
 
 class KeyDisplay(cocos.layer.Layer):
