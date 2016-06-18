@@ -4,9 +4,12 @@ from cocos.director import director
 from cocos.actions.interval_actions import MoveBy, MoveTo, Repeat
 
 PADDLE_SPEED = 20
+TIME_TICK = 0.1
 
-move_up   = Repeat(MoveBy((0, PADDLE_SPEED),  0.1))
-move_down = Repeat(MoveBy((0,- PADDLE_SPEED), 0.1))
+move_up   = Repeat(MoveBy((0, PADDLE_SPEED),  TIME_TICK))
+move_down = Repeat(MoveBy((0,- PADDLE_SPEED), TIME_TICK))
+
+initial_ball_movement = Repeat(MoveBy((PADDLE_SPEED, PADDLE_SPEED), TIME_TICK))
 
 class BallLayer(cocos.layer.Layer):
     is_event_handler = True
@@ -24,10 +27,8 @@ class BallLayer(cocos.layer.Layer):
         self.add(self.paddle_a)
         self.add(self.paddle_b)
 
-        move = MoveBy((500,500), 5)
-        #self.ball.do(move)
-
         self.ball.position = (200, 200)
+        self.ball.do(initial_ball_movement)
         self.paddle_a.position = (10, 200)
         self.paddle_b.position = (600, 200)
 
@@ -41,7 +42,6 @@ class BallLayer(cocos.layer.Layer):
 
     def on_key_release (self, key, modifiers):
         print("(ball) released:", key)
-        #self.current_action.stop()
         self.paddle_a.remove_action(self.current_action)
 
 
