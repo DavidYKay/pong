@@ -10,12 +10,41 @@ time_per_frame = 1.0 / 60
 move_up   = Repeat(MoveBy((0, PADDLE_SPEED),  TIME_TICK))
 move_down = Repeat(MoveBy((0,- PADDLE_SPEED), TIME_TICK))
 
-initial_ball_movement = Repeat(MoveBy((PADDLE_SPEED, PADDLE_SPEED), TIME_TICK))
+initial_ball_velocity = Repeat(MoveBy((PADDLE_SPEED, PADDLE_SPEED), TIME_TICK))
 
 min_x = 0
 max_x = 600
 min_y = 0
 max_y = 600
+
+ball_size = (5, 5)
+paddle_size = (100, 100)
+
+def axis_overlapping(min_a, max_a, min_b, max_b):
+    if max_b > min_a and min_b < min_a:
+        return True
+    elif max_a > min_b and max_b > max_a:
+        return True
+    elif max_a > min_b > min_a:
+        return True
+    elif max_b > min_a > min_b:
+        return True
+    else:
+        return False
+
+def colliding(a, b):
+    if axis_overlapping(a.position[0] - (a.size[0] / 2), a.position[0] + (a.size[0] / 2), b.position[0] - (b.size[0] / 2), b.position[0] + (b.size[0] / 2)) and axis_overlapping(a.position[1] - (a.size[1] / 2), a.position[1] + (a.size[1] / 2), b.position[1] - (b.size[1] / 2), b.position[1] + (b.size[1] / 2)):
+        return True
+    else:
+        return False
+
+def bounce(ball, paddle):
+    ball.velocity = (-ball.velocity[0], -ball.velocity[1])
+
+class Collidable:
+    def __init__(self):
+        self.position = (0,0)
+        self.size = (0,0)
 
 class BallLayer(cocos.layer.Layer):
     is_event_handler = True
@@ -24,11 +53,12 @@ class BallLayer(cocos.layer.Layer):
         # self.text = cocos.text.Label("Ball Layer", x=200, y=380 )
         # self.add(self.text)
 
-        self.ball_movement = (5,2)
-
         self.elapsed = 0
 
         self.ball = cocos.sprite.Sprite("images/pokeball.png")
+        self.ball.size = ball_size
+        #self.ball.velocity = (5,2)
+        self.ball.velocity = (5,0)
 
         self.paddle_a = cocos.sprite.Sprite("images/paddle_a.png")
         self.paddle_b = cocos.sprite.Sprite("images/paddle_b.png")
@@ -38,9 +68,11 @@ class BallLayer(cocos.layer.Layer):
         self.add(self.paddle_b)
 
         self.ball.position = (200, 200)
-        #self.ball.do(initial_ball_movement)
+        #self.ball.do(initial_ball.velocity)
         self.paddle_a.position = (10, 200)
         self.paddle_b.position = (600, 200)
+        self.paddle_a.size = paddle_size
+        self.paddle_b.size = paddle_size
 
         self.schedule( self.step )
 
@@ -49,13 +81,20 @@ class BallLayer(cocos.layer.Layer):
         if self.elapsed > time_per_frame:
             print("step")
             self.elapsed = 0
-            self.ball.position = (self.ball.position[0] + self.ball_movement[0], self.ball.position[1] + self.ball_movement[1])
+            self.ball.position = (self.ball.position[0] + self.ball.velocity[0], self.ball.position[1] + self.ball.velocity[1])
 
+            if colliding(self.ball, self.paddle_a):
+                bounce(self.ball, self.paddle_a)
+            if colliding(self.ball, self.paddle_b):
+                bounce(self.ball, self.paddle_a)
+
+            # TODO: add a point for player A
             if self.ball.position[0] > max_x or self.ball.position[0] < min_x:
-                self.ball_movement = (-self.ball_movement[0], self.ball_movement[1])
+                # self.ball.velocity = (-self.ball.velocity[0], self.ball.velocity[1])
+                self.ball.position = (100,200)
+            # TODO: add a point for player B
             if self.ball.position[1] > max_y or self.ball.position[1] < min_y:
-                self.ball_movement = (self.ball_movement[0], -self.ball_movement[1])
-
+                self.ball.velocity = (self.ball.velocity[0], -self.ball.velocity[1])
 
         else:
             print("%s was less than %s" % (self.elapsed, time_per_frame))
@@ -105,7 +144,7 @@ class KeyDisplay(cocos.layer.Layer):
         text = 'Keys: '+','.join (key_names)
         self.text.element.text = text
 
-
-director.init(resizable=True)
-# Run a scene with our event displayers:
-director.run(cocos.scene.Scene(KeyDisplay(), BallLayer()))
+if __name__ == '__main__':
+    director.init(resizable=True)
+    # Run a scene with our event displayers:
+    director.run(cocos.scene.Scene(KeyDisplay(), BallLayer()))
