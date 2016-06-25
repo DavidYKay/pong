@@ -5,11 +5,14 @@ from cocos.actions.interval_actions import MoveBy, MoveTo, Repeat
 
 PADDLE_SPEED = 20
 TIME_TICK = 0.1
+time_per_frame = 1.0 / 24
 
 move_up   = Repeat(MoveBy((0, PADDLE_SPEED),  TIME_TICK))
 move_down = Repeat(MoveBy((0,- PADDLE_SPEED), TIME_TICK))
 
 initial_ball_movement = Repeat(MoveBy((PADDLE_SPEED, PADDLE_SPEED), TIME_TICK))
+
+ball_movement = (5,5)
 
 class BallLayer(cocos.layer.Layer):
     is_event_handler = True
@@ -17,6 +20,8 @@ class BallLayer(cocos.layer.Layer):
         super(BallLayer, self ).__init__()
         # self.text = cocos.text.Label("Ball Layer", x=200, y=380 )
         # self.add(self.text)
+
+        self.elapsed = 0
 
         self.ball = cocos.sprite.Sprite("images/pokeball.png")
 
@@ -28,9 +33,20 @@ class BallLayer(cocos.layer.Layer):
         self.add(self.paddle_b)
 
         self.ball.position = (200, 200)
-        self.ball.do(initial_ball_movement)
+        #self.ball.do(initial_ball_movement)
         self.paddle_a.position = (10, 200)
         self.paddle_b.position = (600, 200)
+
+        self.schedule( self.step )
+
+    def step(self, delta_time):
+        self.elapsed += delta_time
+        if self.elapsed > time_per_frame:
+            print("step")
+            self.elapsed = 0
+            self.ball.position = (self.ball.position[0] + ball_movement[0], self.ball.position[1] + ball_movement[1])
+        else:
+            print("%s was less than %s" % (self.elapsed, time_per_frame))
 
     def on_key_press (self, key, modifiers):
         if key == 65362:
