@@ -5,14 +5,17 @@ from cocos.actions.interval_actions import MoveBy, MoveTo, Repeat
 
 PADDLE_SPEED = 20
 TIME_TICK = 0.1
-time_per_frame = 1.0 / 24
+time_per_frame = 1.0 / 60
 
 move_up   = Repeat(MoveBy((0, PADDLE_SPEED),  TIME_TICK))
 move_down = Repeat(MoveBy((0,- PADDLE_SPEED), TIME_TICK))
 
 initial_ball_movement = Repeat(MoveBy((PADDLE_SPEED, PADDLE_SPEED), TIME_TICK))
 
-ball_movement = (5,5)
+min_x = 0
+max_x = 600
+min_y = 0
+max_y = 600
 
 class BallLayer(cocos.layer.Layer):
     is_event_handler = True
@@ -20,6 +23,8 @@ class BallLayer(cocos.layer.Layer):
         super(BallLayer, self ).__init__()
         # self.text = cocos.text.Label("Ball Layer", x=200, y=380 )
         # self.add(self.text)
+
+        self.ball_movement = (5,2)
 
         self.elapsed = 0
 
@@ -44,7 +49,14 @@ class BallLayer(cocos.layer.Layer):
         if self.elapsed > time_per_frame:
             print("step")
             self.elapsed = 0
-            self.ball.position = (self.ball.position[0] + ball_movement[0], self.ball.position[1] + ball_movement[1])
+            self.ball.position = (self.ball.position[0] + self.ball_movement[0], self.ball.position[1] + self.ball_movement[1])
+
+            if self.ball.position[0] > max_x or self.ball.position[0] < min_x:
+                self.ball_movement = (-self.ball_movement[0], self.ball_movement[1])
+            if self.ball.position[1] > max_y or self.ball.position[1] < min_y:
+                self.ball_movement = (self.ball_movement[0], -self.ball_movement[1])
+
+
         else:
             print("%s was less than %s" % (self.elapsed, time_per_frame))
 
