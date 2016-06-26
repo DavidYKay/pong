@@ -4,15 +4,10 @@ import pyglet
 from cocos.director import director
 from cocos.actions.interval_actions import MoveBy, MoveTo, Repeat
 
-PADDLE_SPEED = 20
+PADDLE_SPEED = 12
 AI_PADDLE_SPEED = 5
 TIME_TICK = 0.1
 TIME_PER_FRAME = 1.0 / 60
-
-move_up   = Repeat(MoveBy((0, PADDLE_SPEED),  TIME_TICK))
-move_down = Repeat(MoveBy((0,- PADDLE_SPEED), TIME_TICK))
-
-#initial_ball_velocity = Repeat(MoveBy((PADDLE_SPEED, PADDLE_SPEED), TIME_TICK))
 
 MIN_X = 0
 MAX_X = 600
@@ -70,8 +65,8 @@ class BallLayer(cocos.layer.Layer):
         self.add(self.paddle_a)
         self.add(self.paddle_b)
 
-        self.ball.position = (200, 200)
-        #self.ball.do(initial_ball.velocity)
+        self.ball.position = (avg(MAX_X, MIN_X), 200)
+        self.paddle_a.velocity = (0, 0)
         self.paddle_a.position = (10, 200)
         self.paddle_b.position = (600, 200)
         self.paddle_a.size = PADDLE_SIZE
@@ -112,20 +107,25 @@ class BallLayer(cocos.layer.Layer):
             else:
                 pass
 
+            self.paddle_a.position = (self.paddle_a.position[0], self.paddle_a.position[1] + self.paddle_a.velocity[1])
+
         else:
             print("%s was less than %s" % (self.elapsed, TIME_PER_FRAME))
 
     def on_key_press (self, key, modifiers):
         if key == 65362:
-            self.current_action = self.paddle_a.do(move_up)
+            self.paddle_a.velocity = (0, PADDLE_SPEED)
+            #self.current_action = self.paddle_a.do(move_up)
         elif key == 65364:
-            self.current_action = self.paddle_a.do(move_down)
+            self.paddle_a.velocity = (0, -PADDLE_SPEED)
+            #self.current_action = self.paddle_a.do(move_down)
         else:
             print("(ball) unknown key pressed:", key)
 
     def on_key_release (self, key, modifiers):
         print("(ball) released:", key)
-        self.paddle_a.remove_action(self.current_action)
+        self.paddle_a.velocity = (0, 0)
+        #self.paddle_a.remove_action(self.currrnt_action)
 
 
 if __name__ == '__main__':
