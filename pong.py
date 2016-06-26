@@ -1,9 +1,11 @@
 import cocos
+import math
 import pyglet
 from cocos.director import director
 from cocos.actions.interval_actions import MoveBy, MoveTo, Repeat
 
 PADDLE_SPEED = 20
+AI_PADDLE_SPEED = 5
 TIME_TICK = 0.1
 TIME_PER_FRAME = 1.0 / 60
 
@@ -19,7 +21,7 @@ MAX_Y = 600
 
 BALL_SIZE = (48, 48)
 PADDLE_SIZE = (20, 80)
-INITIAL_BALL_VELOCITY = (5,0)
+INITIAL_BALL_VELOCITY = (5,2)
 
 def axis_overlapping(min_a, max_a, min_b, max_b):
     if max_b > min_a and min_b < min_a:
@@ -42,6 +44,9 @@ def colliding(a, b):
 def bounce(ball, paddle):
     ball.velocity = (-ball.velocity[0], -ball.velocity[1])
 
+def avg(nums):
+    return sum(nums) / len(nums)
+
 class Collidable:
     def __init__(self):
         self.position = (0,0)
@@ -56,7 +61,6 @@ class BallLayer(cocos.layer.Layer):
 
         self.ball = cocos.sprite.Sprite("images/pokeball.png")
         self.ball.size = BALL_SIZE
-        #self.ball.velocity = (5,2)
         self.ball.velocity = INITIAL_BALL_VELOCITY
 
         self.paddle_a = cocos.sprite.Sprite("images/paddle_a.png")
@@ -77,7 +81,7 @@ class BallLayer(cocos.layer.Layer):
 
     def step(self, delta_time):
         self.elapsed += delta_time
-        if self.elapsed > time_per_frame:
+        if self.elapsed > TIME_PER_FRAME:
             print("step")
             self.elapsed = 0
             self.ball.position = (self.ball.position[0] + self.ball.velocity[0], self.ball.position[1] + self.ball.velocity[1])
@@ -88,17 +92,28 @@ class BallLayer(cocos.layer.Layer):
                 bounce(self.ball, self.paddle_a)
 
             # TODO: add a point for player A
-            if self.ball.position[0] > max_x or self.ball.position[0] < min_x:
+            if self.ball.position[0] > MAX_X or self.ball.position[0] < MIN_X:
                 # self.ball.velocity = (-self.ball.velocity[0], self.ball.velocity[1])
-                self.ball.position = (100,200)
+                self.ball.position = (avg([MAX_X, MIN_X]), 200)
             # TODO: add a point for player B
-            if self.ball.position[1] > max_y or self.ball.position[1] < min_y:
+            if self.ball.position[1] > MAX_Y or self.ball.position[1] < MIN_Y:
                 self.ball.velocity = (self.ball.velocity[0], -self.ball.velocity[1])
 
-            #
+            #print ("paddle b y:", self.paddle_b.position[1] )
+            #print ("Ball Y:", self.ball.position[1])
+            #print ("AI delta y:", ai_delta_y)
+            #self.paddle_b.position = (self.paddle_b.position[0], self.paddle_b.position[1] + ai_delta_y)
+
+            ai_delta_y = abs(self.paddle_b.position[1] - self.ball.position[1])
+            if self.paddle_b.position[1] < self.ball.position[1]:
+                self.paddle_b.position = (self.paddle_b.position[0], self.paddle_b.position[1] + min(AI_PADDLE_SPEED, ai_delta_y))
+            elif self.paddle_b.position[1] > self.ball.position[1]:
+                self.paddle_b.position = (self.paddle_b.position[0], self.paddle_b.position[1] - min(AI_PADDLE_SPEED, ai_delta_y))
+            else:
+                pass
 
         else:
-            print("%s was less than %s" % (self.elapsed, time_per_frame))
+            print("%s was less than %s" % (self.elapsed, TIME_PER_FRAME))
 
     def on_key_press (self, key, modifiers):
         if key == 65362:
