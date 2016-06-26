@@ -65,10 +65,11 @@ class BallLayer(cocos.layer.Layer):
         self.add(self.paddle_a)
         self.add(self.paddle_b)
 
-        self.ball.position = (avg(MAX_X, MIN_X), 200)
+        mid_y = avg([MAX_Y, MIN_Y])
+        self.ball.position = (avg([MAX_X, MIN_X]), mid_y)
         self.paddle_a.velocity = (0, 0)
-        self.paddle_a.position = (10, 200)
-        self.paddle_b.position = (600, 200)
+        self.paddle_a.position = (MIN_X + PADDLE_SIZE[0], mid_y)
+        self.paddle_b.position = (MAX_X - PADDLE_SIZE[0], mid_y)
         self.paddle_a.size = PADDLE_SIZE
         self.paddle_b.size = PADDLE_SIZE
 
