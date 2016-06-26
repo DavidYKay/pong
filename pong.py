@@ -5,20 +5,21 @@ from cocos.actions.interval_actions import MoveBy, MoveTo, Repeat
 
 PADDLE_SPEED = 20
 TIME_TICK = 0.1
-time_per_frame = 1.0 / 60
+TIME_PER_FRAME = 1.0 / 60
 
 move_up   = Repeat(MoveBy((0, PADDLE_SPEED),  TIME_TICK))
 move_down = Repeat(MoveBy((0,- PADDLE_SPEED), TIME_TICK))
 
-initial_ball_velocity = Repeat(MoveBy((PADDLE_SPEED, PADDLE_SPEED), TIME_TICK))
+#initial_ball_velocity = Repeat(MoveBy((PADDLE_SPEED, PADDLE_SPEED), TIME_TICK))
 
-min_x = 0
-max_x = 600
-min_y = 0
-max_y = 600
+MIN_X = 0
+MAX_X = 600
+MIN_Y = 0
+MAX_Y = 600
 
-ball_size = (5, 5)
-paddle_size = (100, 100)
+BALL_SIZE = (48, 48)
+PADDLE_SIZE = (20, 80)
+INITIAL_BALL_VELOCITY = (5,0)
 
 def axis_overlapping(min_a, max_a, min_b, max_b):
     if max_b > min_a and min_b < min_a:
@@ -50,15 +51,13 @@ class BallLayer(cocos.layer.Layer):
     is_event_handler = True
     def __init__(self):
         super(BallLayer, self ).__init__()
-        # self.text = cocos.text.Label("Ball Layer", x=200, y=380 )
-        # self.add(self.text)
 
         self.elapsed = 0
 
         self.ball = cocos.sprite.Sprite("images/pokeball.png")
-        self.ball.size = ball_size
+        self.ball.size = BALL_SIZE
         #self.ball.velocity = (5,2)
-        self.ball.velocity = (5,0)
+        self.ball.velocity = INITIAL_BALL_VELOCITY
 
         self.paddle_a = cocos.sprite.Sprite("images/paddle_a.png")
         self.paddle_b = cocos.sprite.Sprite("images/paddle_b.png")
@@ -71,8 +70,8 @@ class BallLayer(cocos.layer.Layer):
         #self.ball.do(initial_ball.velocity)
         self.paddle_a.position = (10, 200)
         self.paddle_b.position = (600, 200)
-        self.paddle_a.size = paddle_size
-        self.paddle_b.size = paddle_size
+        self.paddle_a.size = PADDLE_SIZE
+        self.paddle_b.size = PADDLE_SIZE
 
         self.schedule( self.step )
 
@@ -95,6 +94,8 @@ class BallLayer(cocos.layer.Layer):
             # TODO: add a point for player B
             if self.ball.position[1] > max_y or self.ball.position[1] < min_y:
                 self.ball.velocity = (self.ball.velocity[0], -self.ball.velocity[1])
+
+            #
 
         else:
             print("%s was less than %s" % (self.elapsed, time_per_frame))
